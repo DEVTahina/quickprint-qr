@@ -124,8 +124,6 @@ cd quickprint-qr
 npm install
 ```
 
-> À l'issue de la Phase 0, seule la structure du monorepo est en place. Les applications `apps/frontend` et `apps/backend` sont initialisées en Phase 1. Les commandes de démarrage ci-dessous seront alors opérationnelles.
-
 ## Démarrage
 
 ```bash
@@ -144,7 +142,16 @@ npm run lint    # Lint de toutes les applications
 npm run test    # Tests de toutes les applications
 ```
 
-Les URL exactes de l'API, de la route `GET /health` et de la documentation Swagger sont précisées dans le README à la fin de la Phase 1.
+Une fois les deux serveurs lancés :
+
+| Service | URL |
+|---|---|
+| Frontend | <http://localhost:5173> |
+| API | <http://localhost:3000> |
+| Health check | <http://localhost:3000/health> |
+| Documentation Swagger | <http://localhost:3000/api/docs> |
+
+Le frontend expose pour l'instant la page d'accueil (`/`) et une page de connexion administrateur temporaire (`/admin/login`). L'API expose `GET /health` et sa documentation OpenAPI.
 
 ## Variables d'environnement
 
@@ -190,7 +197,7 @@ Une documentation technique sera ajoutée au fil des phases : `docs/database.md`
 | Phase | Contenu | Statut |
 |---:|---|---|
 | 0 | Dépôt GitHub et structure monorepo | ✅ Terminée |
-| 1 | Initialisation frontend et backend | ⏳ À venir |
+| 1 | Initialisation frontend et backend | ✅ Terminée |
 | 2 | Supabase, base de données, RLS et stockage | ⏳ À venir |
 | 3 | Authentification et espace administrateur | ⏳ À venir |
 | 4 | Sessions de réception et QR Code | ⏳ À venir |
