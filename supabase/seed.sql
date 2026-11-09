@@ -1,0 +1,13 @@
+-- ------------------------------------------------------------------------------
+-- QuickPrint QR - Donnees initiales
+-- ------------------------------------------------------------------------------
+-- Ce fichier est execute apres les migrations lors d'un `supabase db reset`.
+-- Il ne doit contenir aucune donnee sensible, aucun mot de passe et aucune cle.
+--
+-- Aucun compte administrateur n'est cree automatiquement : l'inscription
+-- publique est volontairement desactivee. Le premier administrateur est cree
+-- manuellement dans Supabase Auth puis rattache a `admin_profiles`
+-- (voir docs/database.md).
+--
+-- Les valeurs de configuration applicative par defaut seront ajoutees dans
+-- `app_settings` lors de la phase 2.
