@@ -27,6 +27,23 @@ describe('AppController (e2e)', () => {
       });
   });
 
+  it('/sessions (GET) refuse un visiteur non authentifie', () => {
+    return request(app.getHttpServer()).get('/sessions').expect(401);
+  });
+
+  it('/sessions (POST) refuse un visiteur non authentifie', () => {
+    return request(app.getHttpServer()).post('/sessions').send({}).expect(401);
+  });
+
+  it('/public/sessions/:token refuse un token invalide', () => {
+    return request(app.getHttpServer())
+      .get('/public/sessions/token-invalide')
+      .expect(404)
+      .expect((response) => {
+        expect(response.body.message).toBe('Session introuvable ou invalide.');
+      });
+  });
+
   afterEach(async () => {
     await app.close();
   });

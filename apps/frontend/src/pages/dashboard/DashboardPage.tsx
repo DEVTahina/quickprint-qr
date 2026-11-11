@@ -1,8 +1,10 @@
-import { ShieldCheck } from 'lucide-react';
+import { ArrowRight, QrCode, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
+import { ROUTES } from '../../constants/app';
 import { useAuth } from '../../contexts/auth-context';
 
-/** Accueil de l'espace administrateur ; les sessions arrivent en Phase 4. */
+/** Accueil de l'espace administrateur. */
 export default function DashboardPage() {
   const { admin } = useAuth();
 
@@ -12,16 +14,24 @@ export default function DashboardPage() {
         <span className="card__icon" aria-hidden="true">
           <ShieldCheck size={22} />
         </span>
-        <span className="badge">Phase 3 — authentification active</span>
+        <span className="badge">Authentification vérifiée par le serveur</span>
         <h1>Espace administrateur</h1>
         <p>
-          Bienvenue {admin?.fullName ?? admin?.email}. Votre acces administrateur a ete
-          verifie par le serveur.
+          Bienvenue {admin?.fullName ?? admin?.email}. Votre accès administrateur
+          a été vérifié par le serveur.
         </p>
-        <p className="form-note">
-          La creation des sessions et la generation des QR Codes seront ajoutees a la
-          Phase 4.
+        <p>
+          Créez une session temporaire pour afficher le QR Code de dépôt à vos
+          étudiants.
         </p>
+        <Link
+          className="btn btn--primary dashboard-card__action"
+          to={ROUTES.adminSessions}
+        >
+          <QrCode size={17} aria-hidden="true" />
+          Gérer les sessions
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
       </section>
     </div>
   );

@@ -5,6 +5,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { validateEnvironment } from './config/env.validation.js';
+import { SessionsModule } from './sessions/sessions.module.js';
 import { SupabaseModule } from './supabase/supabase.module.js';
 
 @Module({
@@ -17,6 +18,7 @@ import { SupabaseModule } from './supabase/supabase.module.js';
     }),
     SupabaseModule,
     AuthModule,
+    SessionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

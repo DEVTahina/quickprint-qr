@@ -1,4 +1,4 @@
-import { LogOut, QrCode } from 'lucide-react';
+import { LogOut, QrCode, ScanLine } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 
 import { APP_NAME, APP_SLOGAN, ROUTES } from '../constants/app';
@@ -27,6 +27,10 @@ export default function AdminLayout() {
           </Link>
 
           <div className="admin-session">
+            <Link className="admin-nav__link" to={ROUTES.adminSessions}>
+              <ScanLine size={16} aria-hidden="true" />
+              Sessions
+            </Link>
             <span className="admin-session__email">{admin?.email}</span>
             <button
               className="btn btn--ghost btn--small"

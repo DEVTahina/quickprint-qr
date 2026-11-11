@@ -74,10 +74,10 @@ export default function HomePage() {
           </div>
           <p className="qr-card__title">Session de réception</p>
           <p className="qr-card__text">
-            Le QR Code réel sera généré à la Phase 4, après la connexion sécurisée de
-            l’administrateur.
+            L’administrateur crée une session temporaire depuis son espace sécurisé
+            et affiche le QR Code à l’imprimerie.
           </p>
-          <span className="qr-card__status">Bientôt disponible</span>
+          <span className="qr-card__status">Généré à la demande</span>
         </aside>
       </section>
 

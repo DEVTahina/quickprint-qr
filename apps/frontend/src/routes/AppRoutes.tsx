@@ -7,6 +7,8 @@ import PublicLayout from '../layouts/PublicLayout';
 import LoginPage from '../pages/auth/LoginPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import HomePage from '../pages/home/HomePage';
+import SessionsPage from '../pages/sessions/SessionsPage';
+import DepositPage from '../pages/student/DepositPage';
 
 /** Table des routes de l'application. */
 export default function AppRoutes() {
@@ -15,11 +17,13 @@ export default function AppRoutes() {
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path={ROUTES.adminLogin} element={<LoginPage />} />
+        <Route path="/depot/:token" element={<DepositPage />} />
       </Route>
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AdminLayout />}>
           <Route path={ROUTES.adminDashboard} element={<DashboardPage />} />
+          <Route path={ROUTES.adminSessions} element={<SessionsPage />} />
         </Route>
       </Route>
 
