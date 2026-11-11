@@ -9,5 +9,5 @@
 -- manuellement dans Supabase Auth puis rattache a `admin_profiles`
 -- (voir docs/database.md).
 --
--- Les valeurs de configuration applicative par defaut seront ajoutees dans
--- `app_settings` lors de la phase 2.
+-- Aucune valeur n'est insérée dans `app_settings` : les réglages applicatifs
+-- sont définis et modifiés par le backend, jamais par un seed public.

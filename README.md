@@ -114,6 +114,7 @@ Le monorepo utilise **npm workspaces** (`apps/*`) : une seule installation à la
 - **npm** `>= 10.0.0`
 - **Git**
 - Un projet **Supabase** (base de données, Auth et Storage)
+- **Docker Desktop** pour l'environnement Supabase local
 - Un compte **Render** pour le déploiement (à partir de la Phase 8)
 
 ## Installation
@@ -133,6 +134,17 @@ npm run dev:frontend
 # Backend (NestJS) — http://localhost:3000
 npm run dev:backend
 ```
+
+### Base de données locale (Supabase + Docker)
+
+```bash
+npx supabase start     # PostgreSQL, Auth et Storage locaux
+npx supabase db reset  # applique les migrations et seed.sql
+```
+
+L'API locale est disponible sur `http://127.0.0.1:54321` et PostgreSQL sur
+`postgresql://postgres:postgres@127.0.0.1:54322/postgres`. Le schéma et les
+politiques d'accès sont décrits dans [`docs/database.md`](docs/database.md).
 
 Autres scripts racine :
 
@@ -187,10 +199,11 @@ Les principes suivants s'appliquent à toutes les phases :
 ## Documentation
 
 - [`docs/QuickPrint_QR_Plan_Developpement.md`](docs/QuickPrint_QR_Plan_Developpement.md) — plan de développement complet et prompts par phase
+- [`docs/database.md`](docs/database.md) — schéma PostgreSQL, politiques RLS et stockage privé
 - [`docs/Structure-dossier.md`](docs/Structure-dossier.md) — arborescence cible du projet
 - [`docs/phase-developement/`](docs/phase-developement/) — consignes détaillées de chaque phase
 
-Une documentation technique sera ajoutée au fil des phases : `docs/database.md` (Phase 2), `docs/architecture.md` et `docs/deployment.md` (Phase 8).
+`docs/architecture.md` et `docs/deployment.md` seront ajoutés en Phase 8.
 
 ## État d'avancement
 
@@ -198,7 +211,7 @@ Une documentation technique sera ajoutée au fil des phases : `docs/database.md`
 |---:|---|---|
 | 0 | Dépôt GitHub et structure monorepo | ✅ Terminée |
 | 1 | Initialisation frontend et backend | ✅ Terminée |
-| 2 | Supabase, base de données, RLS et stockage | ⏳ À venir |
+| 2 | Supabase, base de données, RLS et stockage | ✅ Terminée |
 | 3 | Authentification et espace administrateur | ⏳ À venir |
 | 4 | Sessions de réception et QR Code | ⏳ À venir |
 | 5 | Réception et envoi sécurisé des PDF | ⏳ À venir |
