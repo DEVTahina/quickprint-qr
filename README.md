@@ -114,7 +114,7 @@ Le monorepo utilise **npm workspaces** (`apps/*`) : une seule installation à la
 - **npm** `>= 10.0.0`
 - **Git**
 - Un projet **Supabase** (base de données, Auth et Storage)
-- **Docker Desktop** pour l'environnement Supabase local
+- **Docker Desktop** (uniquement pour l'option Supabase local)
 - Un compte **Render** pour le déploiement (à partir de la Phase 8)
 
 ## Installation
@@ -135,7 +135,13 @@ npm run dev:frontend
 npm run dev:backend
 ```
 
-### Base de données locale (Supabase + Docker)
+Le développement utilise le projet **Supabase en ligne**. Renseigner les fichiers
+`.env` (voir [`docs/authentication.md`](docs/authentication.md)), appliquer les
+migrations puis créer le compte administrateur.
+
+### Base de données locale (optionnelle)
+
+Pour travailler sans projet distant, Supabase peut aussi tourner dans Docker :
 
 ```bash
 npx supabase start     # PostgreSQL, Auth et Storage locaux
@@ -163,7 +169,7 @@ Une fois les deux serveurs lancés :
 | Health check | <http://localhost:3000/health> |
 | Documentation Swagger | <http://localhost:3000/api/docs> |
 
-Le frontend expose pour l'instant la page d'accueil (`/`) et une page de connexion administrateur temporaire (`/admin/login`). L'API expose `GET /health` et sa documentation OpenAPI.
+Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`) et l'espace administrateur protégé (`/admin`). L'API expose `GET /health`, `GET /auth/me` et sa documentation OpenAPI.
 
 ## Variables d'environnement
 
@@ -179,6 +185,8 @@ Chaque application dispose d'un fichier `.env.example` (créé en Phase 1) lista
 | Backend | `SUPABASE_SERVICE_ROLE_KEY` | Clé service role (serveur uniquement) |
 | Backend | `FRONTEND_URL` | Origine autorisée pour CORS |
 | Backend | `NODE_ENV` | Environnement d'exécution |
+
+La connexion administrateur, la vérification du token et la création du premier compte sont décrites dans [`docs/authentication.md`](docs/authentication.md).
 
 > **Aucun fichier `.env` réel ni aucune clé ne doit être versionné.** Seuls les fichiers `.env.example` sans valeur secrète sont commités.
 
@@ -200,6 +208,7 @@ Les principes suivants s'appliquent à toutes les phases :
 
 - [`docs/QuickPrint_QR_Plan_Developpement.md`](docs/QuickPrint_QR_Plan_Developpement.md) — plan de développement complet et prompts par phase
 - [`docs/database.md`](docs/database.md) — schéma PostgreSQL, politiques RLS et stockage privé
+- [`docs/authentication.md`](docs/authentication.md) — Supabase Auth, premier administrateur et protection des routes
 - [`docs/Structure-dossier.md`](docs/Structure-dossier.md) — arborescence cible du projet
 - [`docs/phase-developement/`](docs/phase-developement/) — consignes détaillées de chaque phase
 
@@ -212,7 +221,7 @@ Les principes suivants s'appliquent à toutes les phases :
 | 0 | Dépôt GitHub et structure monorepo | ✅ Terminée |
 | 1 | Initialisation frontend et backend | ✅ Terminée |
 | 2 | Supabase, base de données, RLS et stockage | ✅ Terminée |
-| 3 | Authentification et espace administrateur | ⏳ À venir |
+| 3 | Authentification et espace administrateur | ✅ Terminée |
 | 4 | Sessions de réception et QR Code | ⏳ À venir |
 | 5 | Réception et envoi sécurisé des PDF | ⏳ À venir |
 | 6 | Tableau de bord et temps réel | ⏳ À venir |

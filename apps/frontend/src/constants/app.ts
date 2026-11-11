@@ -6,6 +6,7 @@ export const APP_DESCRIPTION =
 export const ROUTES = {
   home: '/',
   adminLogin: '/admin/login',
+  adminDashboard: '/admin',
 } as const;
 
 export const DEFAULT_API_URL = 'http://localhost:3000';

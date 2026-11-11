@@ -39,13 +39,13 @@ const advantages = [
   },
 ];
 
-/** Page d'accueil temporaire de la Phase 1. */
+/** Page d'accueil publique. */
 export default function HomePage() {
   return (
     <div className="container">
       <section className="hero">
         <div>
-          <span className="badge">Phase 1 — interface temporaire</span>
+          <span className="badge">Espace administrateur securise</span>
           <h1>
             Vos PDF à l’imprimerie,
             <br />
@@ -122,9 +122,9 @@ export default function HomePage() {
       <section className="notice">
         <h2>Prochaines étapes</h2>
         <p>
-          Cette page est volontairement temporaire. L’authentification réelle, les sessions
-          de réception, l’envoi des PDF et l’impression seront ajoutés progressivement au
-          cours des phases 3 à 7.
+          L’authentification administrateur est désormais active. Les sessions de
+          réception, l’envoi des PDF et l’impression seront ajoutés progressivement au
+          cours des phases 4 à 7.
         </p>
       </section>
     </div>
