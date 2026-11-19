@@ -59,4 +59,10 @@ export class PublicPrintSessionDto implements PublicPrintSession {
 
   @ApiProperty({ example: 5, minimum: 1, maximum: 20 })
   maxFiles!: number;
+
+  @ApiProperty({
+    description: 'Taille maximale acceptée par fichier, en octets',
+    example: 20_971_520,
+  })
+  maxFileSizeBytes!: number;
 }
