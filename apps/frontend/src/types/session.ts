@@ -23,6 +23,7 @@ export interface PublicPrintSession {
   status: PrintSessionStatus;
   expiresAt: string;
   maxFiles: number;
+  maxFileSizeBytes: number;
 }
 
 export interface CreateSessionInput {
