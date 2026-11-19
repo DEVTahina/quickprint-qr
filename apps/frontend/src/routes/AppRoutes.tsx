@@ -6,6 +6,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import PublicLayout from '../layouts/PublicLayout';
 import LoginPage from '../pages/auth/LoginPage';
 import DashboardPage from '../pages/dashboard/DashboardPage';
+import DocumentsPage from '../pages/documents/DocumentsPage';
 import HomePage from '../pages/home/HomePage';
 import SessionsPage from '../pages/sessions/SessionsPage';
 import DepositPage from '../pages/student/DepositPage';
@@ -24,6 +25,7 @@ export default function AppRoutes() {
         <Route element={<AdminLayout />}>
           <Route path={ROUTES.adminDashboard} element={<DashboardPage />} />
           <Route path={ROUTES.adminSessions} element={<SessionsPage />} />
+          <Route path={ROUTES.adminDocuments} element={<DocumentsPage />} />
         </Route>
       </Route>
 
