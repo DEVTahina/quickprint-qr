@@ -7,8 +7,10 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import type { AdminProfile } from '../auth/types/admin-profile.js';
+import { MAX_PDF_SIZE_BYTES } from '../config/upload.config.js';
 import { SupabaseService } from '../supabase/supabase.service.js';
 import type { CreateSessionDto } from './dto/create-session.dto.js';
 import type {
@@ -17,6 +19,7 @@ import type {
   PrintSessionSummary,
   PublicPrintSession,
 } from './types/print-session.js';
+import type { UploadSessionAccess } from '../uploads/types/upload.js';
 
 const DEFAULT_EXPIRES_IN_MINUTES = 120;
 const DEFAULT_MAX_FILES = 5;
@@ -43,7 +46,18 @@ interface PublicSessionRow {
 export class SessionsService {
   private readonly logger = new Logger(SessionsService.name);
 
-  constructor(private readonly supabase: SupabaseService) {}
+  private readonly maxFileSizeBytes: number;
+
+  constructor(
+    private readonly supabase: SupabaseService,
+    config: ConfigService,
+  ) {
+    const configuredSize = config.get<number>('MAX_PDF_SIZE_BYTES');
+    this.maxFileSizeBytes =
+      typeof configuredSize === 'number' && configuredSize > 0
+        ? Math.min(configuredSize, MAX_PDF_SIZE_BYTES)
+        : MAX_PDF_SIZE_BYTES;
+  }
 
   /** Cree une session et retourne le token brut une seule fois. */
   async create(
@@ -181,14 +195,34 @@ export class SessionsService {
    * Retourne uniquement des metadonnees non sensibles.
    */
   async inspectToken(token: string): Promise<PublicPrintSession> {
-    if (!TOKEN_PATTERN.test(token)) {
+    const session = await this.resolveToken(token);
+
+    if (!session) {
       throw new NotFoundException('Session introuvable ou invalide.');
+    }
+
+    return {
+      valid: session.status === 'active',
+      status: session.status,
+      expiresAt: session.expiresAt,
+      maxFiles: session.maxFiles,
+      maxFileSizeBytes: this.maxFileSizeBytes,
+    };
+  }
+
+  /**
+   * Résout un token pour les routes publiques d'upload.
+   * Retourne null si le token est mal formé ou inconnu.
+   */
+  async resolveToken(token: string): Promise<UploadSessionAccess | null> {
+    if (!TOKEN_PATTERN.test(token)) {
+      return null;
     }
 
     const { data, error } = await this.supabase
       .getClient()
       .from('print_sessions')
-      .select('status, expires_at, max_files')
+      .select('id, status, expires_at, max_files')
       .eq('token_hash', this.hashToken(token))
       .maybeSingle();
 
@@ -197,15 +231,14 @@ export class SessionsService {
     }
 
     if (!data) {
-      throw new NotFoundException('Session introuvable ou invalide.');
+      return null;
     }
 
-    const row = data as PublicSessionRow;
-    const status = this.effectiveStatus(row, Date.now());
+    const row = data as PublicSessionRow & { id: string };
 
     return {
-      valid: status === 'active',
-      status,
+      id: row.id,
+      status: this.effectiveStatus(row, Date.now()),
       expiresAt: row.expires_at,
       maxFiles: row.max_files,
     };
