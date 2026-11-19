@@ -4,6 +4,10 @@ import type {
   PrintSession,
   PublicPrintSession,
 } from '../../types/session';
+import type {
+  FinalizedDocument,
+  UploadAuthorization,
+} from '../../types/upload';
 import { apiClient } from './client';
 
 export async function listSessions(): Promise<PrintSession[]> {
@@ -42,6 +46,28 @@ export async function getPublicSession(
 ): Promise<PublicPrintSession> {
   const { data } = await apiClient.get<PublicPrintSession>(
     `/public/sessions/${encodeURIComponent(token)}`,
+  );
+  return data;
+}
+
+export async function authorizeUpload(
+  token: string,
+  fileName: string,
+  sizeBytes: number,
+): Promise<UploadAuthorization> {
+  const { data } = await apiClient.post<UploadAuthorization>(
+    `/public/sessions/${encodeURIComponent(token)}/uploads`,
+    { fileName, sizeBytes },
+  );
+  return data;
+}
+
+export async function finalizeUpload(
+  token: string,
+  intentId: string,
+): Promise<FinalizedDocument> {
+  const { data } = await apiClient.post<FinalizedDocument>(
+    `/public/sessions/${encodeURIComponent(token)}/uploads/${encodeURIComponent(intentId)}/finalize`,
   );
   return data;
 }
