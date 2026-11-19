@@ -169,7 +169,7 @@ Une fois les deux serveurs lancés :
 | Health check | <http://localhost:3000/health> |
 | Documentation Swagger | <http://localhost:3000/api/docs> |
 
-Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`), l'espace protégé (`/admin`), la gestion des sessions (`/admin/sessions`), la liste des documents (`/admin/documents`) et la page publique d'envoi ouverte par un QR Code (`/depot/:token`). L'API expose `GET /health`, `GET /auth/me`, les routes `/sessions` protégées, `GET /documents` protégée (recherche, filtres, tri et pagination), `GET /public/sessions/:token`, les routes publiques d'upload et sa documentation OpenAPI.
+Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`), l'espace protégé (`/admin`), la gestion des sessions (`/admin/sessions`), la liste des documents (`/admin/documents`) et la page publique d'envoi ouverte par un QR Code (`/depot/:token`). L'API expose `GET /health`, `GET /auth/me`, les routes `/sessions` protégées, `GET /dashboard/summary`, les routes `/documents` protégées (liste, prévisualisation signée, statuts et suppression), `GET /public/sessions/:token`, les routes publiques d'upload et sa documentation OpenAPI. Le tableau de bord s'abonne à Supabase Realtime pour actualiser compteurs et liste à chaque dépôt.
 
 ## Variables d'environnement
 
@@ -214,7 +214,8 @@ Les principes suivants s'appliquent à toutes les phases :
 - [`docs/authentication.md`](docs/authentication.md) — Supabase Auth, premier administrateur et protection des routes
 - [`docs/sessions.md`](docs/sessions.md) — sessions temporaires, token SHA-256 et QR Code
 - [`docs/uploads.md`](docs/uploads.md) — envoi direct des PDF, URL signées, limites et vérifications
-- [`docs/documents.md`](docs/documents.md) — liste des documents, recherche, filtres et pagination
+- [`docs/documents.md`](docs/documents.md) — liste des documents, recherche, filtres, actions et pagination
+- [`docs/dashboard.md`](docs/dashboard.md) — compteurs, derniers documents et actualisation temps réel
 - [`docs/Structure-dossier.md`](docs/Structure-dossier.md) — arborescence cible du projet
 - [`docs/phase-developement/`](docs/phase-developement/) — consignes détaillées de chaque phase
 
@@ -230,7 +231,7 @@ Les principes suivants s'appliquent à toutes les phases :
 | 3 | Authentification et espace administrateur | ✅ Terminée |
 | 4 | Sessions de réception et QR Code | ✅ Terminée |
 | 5 | Réception et envoi sécurisé des PDF | ✅ Terminée |
-| 6 | Tableau de bord et temps réel | ⏳ À venir |
+| 6 | Tableau de bord et temps réel | ✅ Terminée |
 | 7 | Prévisualisation et impression | ⏳ À venir |
 | 8 | Historique, sécurité, tests et déploiement | ⏳ À venir |
 
