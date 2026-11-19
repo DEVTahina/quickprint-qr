@@ -44,6 +44,35 @@ describe('AppController (e2e)', () => {
       });
   });
 
+  it("/public/sessions/:token/uploads (POST) refuse un token invalide", () => {
+    return request(app.getHttpServer())
+      .post('/public/sessions/token-invalide/uploads')
+      .send({ fileName: 'CV.pdf', sizeBytes: 1024 })
+      .expect(404);
+  });
+
+  it("/public/sessions/:token/uploads/:id/finalize (POST) refuse un token invalide", () => {
+    return request(app.getHttpServer())
+      .post(
+        '/public/sessions/token-invalide/uploads/00000000-0000-0000-0000-000000000000/finalize',
+      )
+      .expect(404);
+  });
+
+  it("limite les demandes d'autorisation d'envoi", async () => {
+    for (let index = 0; index < 30; index += 1) {
+      await request(app.getHttpServer())
+        .post('/public/sessions/token-invalide/uploads')
+        .send({ fileName: 'CV.pdf', sizeBytes: 1024 })
+        .expect(404);
+    }
+
+    await request(app.getHttpServer())
+      .post('/public/sessions/token-invalide/uploads')
+      .send({ fileName: 'CV.pdf', sizeBytes: 1024 })
+      .expect(429);
+  });
+
   afterEach(async () => {
     await app.close();
   });
