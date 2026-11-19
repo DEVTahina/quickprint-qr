@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -97,6 +99,7 @@ export class DocumentsController {
   }
 
   @Post('delete')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary:
       'Supprime logiquement une selection de documents et retire les fichiers du stockage',
