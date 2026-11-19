@@ -1,7 +1,32 @@
+import {
+  DEFAULT_UPLOAD_INTENT_TTL_SECONDS,
+  MAX_PDF_SIZE_BYTES,
+} from './upload.config.js';
+
 const REQUIRED_SUPABASE = [
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
 ] as const;
+
+function readIntegerInRange(
+  value: unknown,
+  fallback: number,
+  name: string,
+  min: number,
+  max: number,
+): number {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
+    throw new Error(`${name} doit être un entier compris entre ${min} et ${max}.`);
+  }
+
+  return parsed;
+}
 
 /**
  * Valide et normalise les variables d'environnement au demarrage.
@@ -36,5 +61,26 @@ export function validateEnvironment(
     throw new Error('PORT doit etre un entier compris entre 1 et 65535.');
   }
 
-  return { ...config, NODE_ENV: nodeEnv, PORT: port };
+  const maxPdfSizeBytes = readIntegerInRange(
+    config.MAX_PDF_SIZE_BYTES,
+    MAX_PDF_SIZE_BYTES,
+    'MAX_PDF_SIZE_BYTES',
+    1,
+    MAX_PDF_SIZE_BYTES,
+  );
+  const uploadIntentTtlSeconds = readIntegerInRange(
+    config.UPLOAD_INTENT_TTL_SECONDS,
+    DEFAULT_UPLOAD_INTENT_TTL_SECONDS,
+    'UPLOAD_INTENT_TTL_SECONDS',
+    60,
+    3_600,
+  );
+
+  return {
+    ...config,
+    NODE_ENV: nodeEnv,
+    PORT: port,
+    MAX_PDF_SIZE_BYTES: maxPdfSizeBytes,
+    UPLOAD_INTENT_TTL_SECONDS: uploadIntentTtlSeconds,
+  };
 }
