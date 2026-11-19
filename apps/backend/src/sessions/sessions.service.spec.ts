@@ -7,6 +7,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
+import { ConfigService } from '@nestjs/config';
+
 import type { AdminProfile } from '../auth/types/admin-profile.js';
 import type { SupabaseService } from '../supabase/supabase.service.js';
 import { SessionsService } from './sessions.service.js';
@@ -55,6 +57,10 @@ describe('SessionsService', () => {
   const supabase = {
     getClient: () => ({ from }),
   } as unknown as SupabaseService;
+  const config = {
+    get: (key: string) =>
+      key === 'MAX_PDF_SIZE_BYTES' ? 20_971_520 : undefined,
+  } as unknown as ConfigService;
 
   const admin: AdminProfile = {
     id: 'admin-1',
@@ -84,7 +90,7 @@ describe('SessionsService', () => {
     vi.setSystemTime(now);
     vi.clearAllMocks();
     vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-    service = new SessionsService(supabase);
+    service = new SessionsService(supabase, config);
   });
 
   afterEach(() => {
@@ -312,6 +318,7 @@ describe('SessionsService', () => {
         status: 'active',
         expiresAt: sessionRow().expires_at,
         maxFiles: 5,
+        maxFileSizeBytes: 20_971_520,
       });
     });
 
