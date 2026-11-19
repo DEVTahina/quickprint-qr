@@ -8,6 +8,10 @@ export const ROUTES = {
   adminLogin: '/admin/login',
   adminDashboard: '/admin',
   adminSessions: '/admin/sessions',
+  adminDocuments: '/admin/documents',
 } as const;
 
-export const DEFAULT_API_URL = 'http://localhost:3000';
+// Chemin relatif : le proxy Vite (ou le reverse proxy de production) transmet
+// /api vers le backend. Cela evite d'encoder "localhost" dans le bundle, qui
+// ne fonctionnerait pas depuis un telephone.
+export const DEFAULT_API_URL = '/api';
