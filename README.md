@@ -169,7 +169,7 @@ Une fois les deux serveurs lancés :
 | Health check | <http://localhost:3000/health> |
 | Documentation Swagger | <http://localhost:3000/api/docs> |
 
-Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`), l'espace protégé (`/admin`), la gestion des sessions (`/admin/sessions`) et la page publique ouverte par un QR Code (`/depot/:token`). L'API expose `GET /health`, `GET /auth/me`, les routes `/sessions` protégées, `GET /public/sessions/:token` et sa documentation OpenAPI.
+Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`), l'espace protégé (`/admin`), la gestion des sessions (`/admin/sessions`), la liste des documents (`/admin/documents`) et la page publique d'envoi ouverte par un QR Code (`/depot/:token`). L'API expose `GET /health`, `GET /auth/me`, les routes `/sessions` protégées, `GET /documents` protégée (recherche, filtres, tri et pagination), `GET /public/sessions/:token`, les routes publiques d'upload et sa documentation OpenAPI.
 
 ## Variables d'environnement
 
@@ -177,7 +177,7 @@ Chaque application dispose d'un fichier `.env.example` (créé en Phase 1) lista
 
 | Application | Variable | Rôle |
 |---|---|---|
-| Frontend | `VITE_API_URL` | URL de base de l'API backend |
+| Frontend | `VITE_API_URL` | Chemin ou URL de base de l'API (`/api` par défaut, transmis au backend par le proxy Vite) |
 | Frontend | `VITE_SUPABASE_URL` | URL du projet Supabase |
 | Frontend | `VITE_SUPABASE_ANON_KEY` | Clé publique anonyme Supabase |
 | Backend | `PORT` | Port d'écoute de l'API |
@@ -185,8 +185,10 @@ Chaque application dispose d'un fichier `.env.example` (créé en Phase 1) lista
 | Backend | `SUPABASE_SERVICE_ROLE_KEY` | Clé service role (serveur uniquement) |
 | Backend | `FRONTEND_URL` | Origine autorisée pour CORS |
 | Backend | `NODE_ENV` | Environnement d'exécution |
+| Backend | `MAX_PDF_SIZE_BYTES` | Taille maximale d'un PDF, en octets (20 Mio au maximum) |
+| Backend | `UPLOAD_INTENT_TTL_SECONDS` | Durée de validité d'une autorisation d'envoi, en secondes |
 
-La connexion administrateur, la vérification du token et la création du premier compte sont décrites dans [`docs/authentication.md`](docs/authentication.md). Le cycle de vie des sessions et du QR Code est décrit dans [`docs/sessions.md`](docs/sessions.md).
+La connexion administrateur, la vérification du token et la création du premier compte sont décrites dans [`docs/authentication.md`](docs/authentication.md). Le cycle de vie des sessions et du QR Code est décrit dans [`docs/sessions.md`](docs/sessions.md). Le parcours d'envoi direct, les URL signées et les contrôles PDF sont décrits dans [`docs/uploads.md`](docs/uploads.md).
 
 > **Aucun fichier `.env` réel ni aucune clé ne doit être versionné.** Seuls les fichiers `.env.example` sans valeur secrète sont commités.
 
@@ -199,7 +201,8 @@ Les principes suivants s'appliquent à toutes les phases :
 - **Le bucket `quickprint-documents` est privé** ; l'accès se fait par URL signées à durée courte.
 - **Les tokens de session ne sont jamais stockés en clair** : seule leur empreinte SHA-256 est conservée.
 - **Le backend vérifie les autorisations** à chaque requête ; masquer un bouton dans l'interface ne protège rien.
-- **Les fichiers sont validés côté serveur** (signature PDF, type MIME, taille, nombre).
+- **Les fichiers sont validés côté serveur** (signature PDF, taille réelle, nombre) ; ni le nom, ni le type MIME, ni le chemin fournis par le navigateur ne sont utilisés comme source de confiance.
+- **Les PDF sont envoyés directement** vers une URL signée Supabase ; le backend crée le chemin, limite la durée de finalisation et vérifie l'objet avant de créer le document.
 - **Aucune inscription publique d'administrateur** : les comptes sont créés manuellement.
 - **Limites d'upload et rate limiting** pour prévenir les abus.
 - **Les logs ne contiennent aucun secret ni token.**
@@ -210,6 +213,8 @@ Les principes suivants s'appliquent à toutes les phases :
 - [`docs/database.md`](docs/database.md) — schéma PostgreSQL, politiques RLS et stockage privé
 - [`docs/authentication.md`](docs/authentication.md) — Supabase Auth, premier administrateur et protection des routes
 - [`docs/sessions.md`](docs/sessions.md) — sessions temporaires, token SHA-256 et QR Code
+- [`docs/uploads.md`](docs/uploads.md) — envoi direct des PDF, URL signées, limites et vérifications
+- [`docs/documents.md`](docs/documents.md) — liste des documents, recherche, filtres et pagination
 - [`docs/Structure-dossier.md`](docs/Structure-dossier.md) — arborescence cible du projet
 - [`docs/phase-developement/`](docs/phase-developement/) — consignes détaillées de chaque phase
 
@@ -224,7 +229,7 @@ Les principes suivants s'appliquent à toutes les phases :
 | 2 | Supabase, base de données, RLS et stockage | ✅ Terminée |
 | 3 | Authentification et espace administrateur | ✅ Terminée |
 | 4 | Sessions de réception et QR Code | ✅ Terminée |
-| 5 | Réception et envoi sécurisé des PDF | ⏳ À venir |
+| 5 | Réception et envoi sécurisé des PDF | ✅ Terminée |
 | 6 | Tableau de bord et temps réel | ⏳ À venir |
 | 7 | Prévisualisation et impression | ⏳ À venir |
 | 8 | Historique, sécurité, tests et déploiement | ⏳ À venir |
