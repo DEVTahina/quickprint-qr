@@ -58,7 +58,7 @@ La version initiale fonctionne par Internet : l'étudiant utilise sa propre conn
 - Tableau de bord avec compteurs, recherche, filtres et sélection multiple.
 - Actualisation en temps réel à l'arrivée de nouveaux documents.
 - Prévisualisation des PDF (navigation, zoom, nombre de pages).
-- Impression d'un document ou d'une sélection, avec historique des lots.
+- Impression d'un document ou d'une sélection (fusion dans l'ordre choisi), avec historique des lots.
 - Historique des documents et des impressions.
 - Gestion des statuts : reçu, imprimé, supprimé.
 
@@ -169,7 +169,7 @@ Une fois les deux serveurs lancés :
 | Health check | <http://localhost:3000/health> |
 | Documentation Swagger | <http://localhost:3000/api/docs> |
 
-Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`), l'espace protégé (`/admin`), la gestion des sessions (`/admin/sessions`), la liste des documents (`/admin/documents`) et la page publique d'envoi ouverte par un QR Code (`/depot/:token`). L'API expose `GET /health`, `GET /auth/me`, les routes `/sessions` protégées, `GET /dashboard/summary`, les routes `/documents` protégées (liste, prévisualisation signée, statuts et suppression), `GET /public/sessions/:token`, les routes publiques d'upload et sa documentation OpenAPI. Le tableau de bord s'abonne à Supabase Realtime pour actualiser compteurs et liste à chaque dépôt.
+Le frontend expose la page d'accueil (`/`), la connexion administrateur (`/admin/login`), l'espace protégé (`/admin`), la gestion des sessions (`/admin/sessions`), la liste des documents (`/admin/documents`) et la page publique d'envoi ouverte par un QR Code (`/depot/:token`). L'API expose `GET /health`, `GET /auth/me`, les routes `/sessions` protégées, `GET /dashboard/summary`, les routes `/documents` protégées (liste, prévisualisation signée, statuts et suppression), les routes `/print-batches` (historique des impressions), `GET /public/sessions/:token`, les routes publiques d'upload et sa documentation OpenAPI. Le tableau de bord s'abonne à Supabase Realtime pour actualiser compteurs et liste à chaque dépôt. La visionneuse PDF.js est accessible à l'URL `/admin/documents/:id/apercu`, y compris sur téléphone.
 
 ## Variables d'environnement
 
@@ -188,7 +188,7 @@ Chaque application dispose d'un fichier `.env.example` (créé en Phase 1) lista
 | Backend | `MAX_PDF_SIZE_BYTES` | Taille maximale d'un PDF, en octets (20 Mio au maximum) |
 | Backend | `UPLOAD_INTENT_TTL_SECONDS` | Durée de validité d'une autorisation d'envoi, en secondes |
 
-La connexion administrateur, la vérification du token et la création du premier compte sont décrites dans [`docs/authentication.md`](docs/authentication.md). Le cycle de vie des sessions et du QR Code est décrit dans [`docs/sessions.md`](docs/sessions.md). Le parcours d'envoi direct, les URL signées et les contrôles PDF sont décrits dans [`docs/uploads.md`](docs/uploads.md).
+La connexion administrateur, la vérification du token et la création du premier compte sont décrites dans [`docs/authentication.md`](docs/authentication.md). Le cycle de vie des sessions et du QR Code est décrit dans [`docs/sessions.md`](docs/sessions.md). Le parcours d'envoi direct, les URL signées et les contrôles PDF sont décrits dans [`docs/uploads.md`](docs/uploads.md). Les étapes de mise en ligne, les limites des offres gratuites et la checklist de production sont dans [`docs/deployment.md`](docs/deployment.md).
 
 > **Aucun fichier `.env` réel ni aucune clé ne doit être versionné.** Seuls les fichiers `.env.example` sans valeur secrète sont commités.
 
@@ -204,7 +204,9 @@ Les principes suivants s'appliquent à toutes les phases :
 - **Les fichiers sont validés côté serveur** (signature PDF, taille réelle, nombre) ; ni le nom, ni le type MIME, ni le chemin fournis par le navigateur ne sont utilisés comme source de confiance.
 - **Les PDF sont envoyés directement** vers une URL signée Supabase ; le backend crée le chemin, limite la durée de finalisation et vérifie l'objet avant de créer le document.
 - **Aucune inscription publique d'administrateur** : les comptes sont créés manuellement.
-- **Limites d'upload et rate limiting** pour prévenir les abus.
+- **Limites d'upload et rate limiting** : 120 requêtes/minute par IP, 30 autorisations d'envoi et 60 finalisations par minute, 60 inspections de token par minute.
+- **En-têtes de sécurité** (helmet), CORS limité aux origines de `FRONTEND_URL` et corps JSON plafonné à 32 Ko.
+- **Nettoyage périodique** : sessions expirées alignées en base et envois abandonnés supprimés du stockage toutes les dix minutes.
 - **Les logs ne contiennent aucun secret ni token.**
 
 ## Documentation
@@ -216,10 +218,12 @@ Les principes suivants s'appliquent à toutes les phases :
 - [`docs/uploads.md`](docs/uploads.md) — envoi direct des PDF, URL signées, limites et vérifications
 - [`docs/documents.md`](docs/documents.md) — liste des documents, recherche, filtres, actions et pagination
 - [`docs/dashboard.md`](docs/dashboard.md) — compteurs, derniers documents et actualisation temps réel
+- [`docs/printing.md`](docs/printing.md) — visionneuse PDF.js, fusion et historique des lots d'impression
+- [`docs/deployment.md`](docs/deployment.md) — déploiement Render, variables et checklist de production
 - [`docs/Structure-dossier.md`](docs/Structure-dossier.md) — arborescence cible du projet
 - [`docs/phase-developement/`](docs/phase-developement/) — consignes détaillées de chaque phase
 
-`docs/architecture.md` et `docs/deployment.md` seront ajoutés en Phase 8.
+Le fichier [`render.yaml`](render.yaml) décrit les deux services Render (API Node et site statique). Aucune clé réelle n'y figure : les variables `sync: false` se saisissent dans le tableau de bord Render.
 
 ## État d'avancement
 
@@ -232,8 +236,8 @@ Les principes suivants s'appliquent à toutes les phases :
 | 4 | Sessions de réception et QR Code | ✅ Terminée |
 | 5 | Réception et envoi sécurisé des PDF | ✅ Terminée |
 | 6 | Tableau de bord et temps réel | ✅ Terminée |
-| 7 | Prévisualisation et impression | ⏳ À venir |
-| 8 | Historique, sécurité, tests et déploiement | ⏳ À venir |
+| 7 | Prévisualisation et impression | ✅ Terminée |
+| 8 | Historique, sécurité, tests et déploiement | ✅ Terminée |
 
 ---
 
