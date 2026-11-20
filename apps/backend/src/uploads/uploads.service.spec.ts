@@ -69,7 +69,9 @@ function createChain(result: QueryResult = { data: null, error: null }): QueryCh
   return chain;
 }
 
-function pdfBlob(content = '%PDF-1.7\ncontenu de test'): Blob {
+const VALID_PDF = '%PDF-1.7\ncontenu de test\n%%EOF';
+
+function pdfBlob(content = VALID_PDF): Blob {
   return new Blob([content], { type: 'application/pdf' });
 }
 
@@ -297,7 +299,10 @@ describe('UploadsService', () => {
         .mockReturnValueOnce(createChain({ data: null, error: null }))
         .mockReturnValueOnce(createChain({ data: null, error: null, count: 2 }))
         .mockReturnValueOnce(
-          createChain({ data: documentRow({ size_bytes: 24 }), error: null }),
+          createChain({
+            data: documentRow({ size_bytes: Buffer.byteLength(VALID_PDF) }),
+            error: null,
+          }),
         )
         .mockReturnValueOnce(createChain({ error: null }));
       storage.download.mockResolvedValue({
@@ -310,7 +315,7 @@ describe('UploadsService', () => {
       expect(result).toEqual({
         id: 'intent-1',
         originalName: 'CV.pdf',
-        sizeBytes: Buffer.byteLength('%PDF-1.7\ncontenu de test'),
+        sizeBytes: Buffer.byteLength(VALID_PDF),
         uploadedAt: now.toISOString(),
       });
       expect(storage.download).toHaveBeenCalledWith(
@@ -324,7 +329,7 @@ describe('UploadsService', () => {
         original_name: 'CV.pdf',
         storage_path: 'sessions/session-1/intent-1.pdf',
         mime_type: 'application/pdf',
-        size_bytes: Buffer.byteLength('%PDF-1.7\ncontenu de test'),
+        size_bytes: Buffer.byteLength(VALID_PDF),
         uploaded_at: now.toISOString(),
       });
     });
@@ -352,6 +357,25 @@ describe('UploadsService', () => {
         .mockReturnValueOnce(createChain({ error: null }));
       storage.download.mockResolvedValue({
         data: pdfBlob('pas un pdf'),
+        error: null,
+      });
+
+      await expect(
+        service.finalize('A'.repeat(43), 'intent-1'),
+      ).rejects.toBeInstanceOf(UnsupportedMediaTypeException);
+      expect(storage.remove).toHaveBeenCalledWith([
+        'sessions/session-1/intent-1.pdf',
+      ]);
+    });
+
+    it('refuse un fichier qui commence par %PDF- sans marqueur de fin', async () => {
+      from
+        .mockReturnValueOnce(createChain({ data: intentRow(), error: null }))
+        .mockReturnValueOnce(createChain({ data: null, error: null }))
+        .mockReturnValueOnce(createChain({ data: null, error: null, count: 0 }))
+        .mockReturnValueOnce(createChain({ error: null }));
+      storage.download.mockResolvedValue({
+        data: pdfBlob('%PDF-1.7\ncontenu tronque'),
         error: null,
       });
 
