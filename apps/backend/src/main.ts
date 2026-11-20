@@ -1,13 +1,27 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
 
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get(ConfigService);
+
+  // Render place l'application derriere un proxy : sans cela, le throttling
+  // verrait l'adresse du proxy au lieu de celle du client.
+  app.set('trust proxy', 1);
+
+  // CSP desactivee : elle bloquerait l'interface inline de Swagger. Les autres
+  // protections (nosniff, frameguard, referrer-policy, HSTS) restent actives.
+  app.use(helmet({ contentSecurityPolicy: false }));
+
+  // L'API ne recoit que du JSON leger ; les PDF passent par des URLs signees.
+  app.useBodyParser('json', { limit: '32kb' });
+  app.useBodyParser('urlencoded', { limit: '32kb', extended: true });
 
   const port = config.get<number>('PORT') ?? 3000;
   const frontendUrl =
@@ -18,7 +32,9 @@ async function bootstrap() {
       .split(',')
       .map((url) => url.trim())
       .filter(Boolean),
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 3_600,
   });
 
   app.useGlobalPipes(
