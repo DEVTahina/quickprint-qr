@@ -9,7 +9,13 @@ export const ROUTES = {
   adminDashboard: '/admin',
   adminSessions: '/admin/sessions',
   adminDocuments: '/admin/documents',
+  adminHistory: '/admin/historique',
 } as const;
+
+/** Lien direct vers la visionneuse, utilisable dans l'URL du navigateur. */
+export function documentViewerPath(id: string): string {
+  return `${ROUTES.adminDocuments}/${encodeURIComponent(id)}/apercu`;
+}
 
 // Chemin relatif : le proxy Vite (ou le reverse proxy de production) transmet
 // /api vers le backend. Cela evite d'encoder "localhost" dans le bundle, qui
