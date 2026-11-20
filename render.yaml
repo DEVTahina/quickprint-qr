@@ -8,7 +8,7 @@ services:
     plan: free
     region: frankfurt
     rootDir: .
-    buildCommand: npm ci && npm run build --workspace @quickprint/backend
+    buildCommand: npm ci --include=dev && npm run build --workspace @quickprint/backend
     startCommand: node apps/backend/dist/main.js
     healthCheckPath: /health
     envVars:
@@ -31,7 +31,7 @@ services:
     name: quickprint-web
     runtime: static
     rootDir: .
-    buildCommand: npm ci && npm run build --workspace @quickprint/frontend
+    buildCommand: npm ci --include=dev && npm run build --workspace @quickprint/frontend
     staticPublishPath: apps/frontend/dist
     routes:
       - type: rewrite

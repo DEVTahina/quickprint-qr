@@ -107,7 +107,7 @@ Option B — éditeur SQL :
    - **Environment** : `Node`
    - **Build Command** :
      ```bash
-     npm ci && npm run build --workspace @quickprint/backend
+     npm ci --include=dev && npm run build --workspace @quickprint/backend
      ```
    - **Start Command** :
      ```bash
@@ -159,7 +159,7 @@ refusée. Vous pouvez mettre plusieurs origines séparées par des virgules.
    - **Name** : `quickprint-web` (ou autre)
    - **Build Command** :
      ```bash
-     npm ci && npm run build --workspace @quickprint/frontend
+     npm ci --include=dev && npm run build --workspace @quickprint/frontend
      ```
    - **Publish Directory** : `apps/frontend/dist`
 
