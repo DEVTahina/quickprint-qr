@@ -13,15 +13,16 @@ import {
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { ROUTES } from '../../constants/app';
+import { ROUTES, documentViewerPath } from '../../constants/app';
 import { useDocumentsRealtime } from '../../hooks/useDocumentsRealtime';
 import {
   deleteDocuments,
   listDocuments,
-  previewDocument,
   updateDocumentsStatus,
 } from '../../services/api/documents';
+import { completePrintBatch } from '../../services/api/print-batches';
 import { listSessions } from '../../services/api/sessions';
+import type { PrintJob } from '../../utils/print-pdf';
 import type {
   DocumentPage,
   DocumentSortOrder,
@@ -73,6 +74,7 @@ export default function DocumentsPage() {
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [printJob, setPrintJob] = useState<PrintJob | null>(null);
 
   const lastRealtimeEvent = useDocumentsRealtime(() =>
     setReloadToken((token) => token + 1),
@@ -189,6 +191,11 @@ export default function DocumentsPage() {
     });
   }
 
+  /** Rang de selection (1..N), utilise pour l'ordre d'impression. */
+  function selectionOrder(id: string): number {
+    return selectedIds.has(id) ? [...selectedIds].indexOf(id) + 1 : 0;
+  }
+
   function toggleAllVisible() {
     setSelectedIds((current) => {
       if (items.every((item) => current.has(item.id))) {
@@ -249,24 +256,55 @@ export default function DocumentsPage() {
     );
   }
 
-  async function openPreview(id: string) {
-    // L'onglet est ouvert avant l'appel reseau pour ne pas etre bloque par le
-    // navigateur, puis redirige vers l'URL signee.
-    const tab = window.open('', '_blank');
+  async function printSelection(ids: string[]) {
+    setBusyAction('print');
+    setActionError(null);
+    setNotice(null);
+
+    try {
+      // pdf-lib n'est charge qu'au premier lancement d'une impression.
+      const { printDocuments } = await import('../../utils/print-pdf');
+      const job = await printDocuments(ids);
+      setPrintJob(job);
+    } catch (printError: unknown) {
+      const { message } = getApiError(printError);
+      setActionError(
+        message ??
+          (printError instanceof Error
+            ? printError.message
+            : "L'impression n'a pas pu être préparée."),
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function finishPrint(markPrinted: boolean) {
+    if (!printJob) {
+      return;
+    }
+
+    setBusyAction('finish-print');
     setActionError(null);
 
     try {
-      const { url } = await previewDocument(id);
-
-      if (tab) {
-        tab.location.href = url;
-      } else {
-        window.location.assign(url);
-      }
+      await completePrintBatch(printJob.batchId, markPrinted);
+      setSelectedIds(new Set());
+      setPrintJob(null);
+      setNotice(
+        markPrinted
+          ? `${printJob.totalDocuments} document${printJob.totalDocuments > 1 ? 's' : ''} marqué${printJob.totalDocuments > 1 ? 's' : ''} imprimé${printJob.totalDocuments > 1 ? 's' : ''}.`
+          : "Lot d'impression clôturé ; les statuts restent inchangés.",
+      );
+      setReloadToken((token) => token + 1);
+      window.setTimeout(() => setNotice(null), 6_000);
     } catch (requestError: unknown) {
-      tab?.close();
       const { message } = getApiError(requestError);
-      setActionError(message ?? 'Impossible de consulter ce document.');
+      setActionError(
+        message ?? "Impossible de finaliser le lot d'impression.",
+      );
+    } finally {
+      setBusyAction(null);
     }
   }
 
@@ -335,6 +373,35 @@ export default function DocumentsPage() {
         <p className="realtime-notice" role="status">
           {notice}
         </p>
+      ) : null}
+
+      {printJob ? (
+        <div className="print-confirm" role="status">
+          <p>
+            Lot de {printJob.totalDocuments} document
+            {printJob.totalDocuments > 1 ? 's' : ''} préparé : la boîte
+            d'impression de votre navigateur a été ouverte. Marquer ces
+            documents comme imprimés ?
+          </p>
+          <div className="print-confirm__actions">
+            <button
+              className="btn btn--primary btn--small"
+              type="button"
+              disabled={isBusy}
+              onClick={() => void finishPrint(true)}
+            >
+              Oui, marquer imprimés
+            </button>
+            <button
+              className="btn btn--ghost btn--small"
+              type="button"
+              disabled={isBusy}
+              onClick={() => void finishPrint(false)}
+            >
+              Non, laisser en attente
+            </button>
+          </div>
+        </div>
       ) : null}
 
       <section className="panel">
@@ -463,9 +530,19 @@ export default function DocumentsPage() {
         {selectedIds.size > 0 ? (
           <div className="bulk-bar">
             <span className="bulk-bar__count">
-              {selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''}
+              {selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''} · ordre
+              de sélection
             </span>
             <div className="bulk-bar__actions">
+              <button
+                className="btn btn--primary btn--small"
+                type="button"
+                disabled={isBusy}
+                onClick={() => void printSelection([...selectedIds])}
+              >
+                <Printer size={15} aria-hidden="true" />
+                Imprimer la sélection
+              </button>
               <button
                 className="btn btn--ghost btn--small"
                 type="button"
@@ -567,8 +644,20 @@ export default function DocumentsPage() {
                     </td>
                     <td>
                       <span className="document-name">
-                        <FileText size={15} aria-hidden="true" />
-                        {document.originalName}
+                        {selectionOrder(document.id) > 0 ? (
+                          <span className="selection-order" aria-hidden="true">
+                            {selectionOrder(document.id)}
+                          </span>
+                        ) : (
+                          <FileText size={15} aria-hidden="true" />
+                        )}
+                        <Link
+                          className="document-name__link"
+                          to={documentViewerPath(document.id)}
+                          title="Ouvrir l'aperçu"
+                        >
+                          {document.originalName}
+                        </Link>
                       </span>
                     </td>
                     <td>
@@ -590,16 +679,26 @@ export default function DocumentsPage() {
                     <td>{formatDateTime(document.uploadedAt)}</td>
                     <td>
                       <div className="table-actions">
-                        <button
-                          className="btn btn--ghost btn--small"
-                          type="button"
-                          title="Consulter le PDF"
-                          aria-label={`Consulter ${document.originalName}`}
-                          disabled={isBusy || document.status === 'deleted'}
-                          onClick={() => void openPreview(document.id)}
-                        >
-                          <Eye size={15} aria-hidden="true" />
-                        </button>
+                        {document.status !== 'deleted' ? (
+                          <Link
+                            className="btn btn--ghost btn--small"
+                            to={documentViewerPath(document.id)}
+                            title="Ouvrir l'aperçu"
+                            aria-label={`Ouvrir l'aperçu de ${document.originalName}`}
+                          >
+                            <Eye size={15} aria-hidden="true" />
+                          </Link>
+                        ) : (
+                          <button
+                            className="btn btn--ghost btn--small"
+                            type="button"
+                            title="Document supprimé"
+                            aria-label={`${document.originalName} est supprimé`}
+                            disabled
+                          >
+                            <Eye size={15} aria-hidden="true" />
+                          </button>
+                        )}
                         {document.status === 'printed' ? (
                           <button
                             className="btn btn--ghost btn--small"
