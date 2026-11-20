@@ -29,6 +29,8 @@ import type {
 } from '../../types/session';
 import { getApiError } from '../../utils/api-error';
 
+const QR_STORAGE_KEY = 'quickprint.activeSessionQr';
+
 const STATUS_LABELS: Record<PrintSessionStatus, string> = {
   active: 'Active',
   expired: 'Expirée',
@@ -113,6 +115,27 @@ export default function SessionsPage() {
         if (active) {
           setSessions(data);
           setError(null);
+
+          try {
+            const stored = window.sessionStorage.getItem(QR_STORAGE_KEY);
+            if (stored) {
+              const parsed = JSON.parse(stored) as CreatedPrintSession;
+              const matchingSession = data.find(
+                (session) => session.id === parsed.session.id,
+              );
+
+              if (
+                matchingSession &&
+                effectiveStatus(matchingSession, Date.now()) === 'active'
+              ) {
+                setCreated(parsed);
+              } else {
+                window.sessionStorage.removeItem(QR_STORAGE_KEY);
+              }
+            }
+          } catch {
+            window.sessionStorage.removeItem(QR_STORAGE_KEY);
+          }
         }
       })
       .catch((requestError: unknown) => {
@@ -150,6 +173,7 @@ export default function SessionsPage() {
     try {
       const result = await createSession(form);
       setCreated(result);
+      window.sessionStorage.setItem(QR_STORAGE_KEY, JSON.stringify(result));
       await loadSessions();
     } catch (requestError) {
       const { message } = getApiError(requestError);
@@ -177,6 +201,7 @@ export default function SessionsPage() {
       await closeSession(id);
       if (created?.session.id === id) {
         setCreated(null);
+        window.sessionStorage.removeItem(QR_STORAGE_KEY);
       }
       await loadSessions();
     } catch (requestError) {
@@ -197,6 +222,7 @@ export default function SessionsPage() {
     try {
       const result = await renewSession(id, form);
       setCreated(result);
+      window.sessionStorage.setItem(QR_STORAGE_KEY, JSON.stringify(result));
       await loadSessions();
     } catch (requestError) {
       const { message } = getApiError(requestError);
