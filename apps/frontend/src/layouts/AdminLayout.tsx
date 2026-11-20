@@ -1,4 +1,4 @@
-import { FileText, LogOut, QrCode, ScanLine } from 'lucide-react';
+import { FileText, History, LogOut, QrCode, ScanLine } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 
 import { APP_NAME, APP_SLOGAN, ROUTES } from '../constants/app';
@@ -34,6 +34,10 @@ export default function AdminLayout() {
             <Link className="admin-nav__link" to={ROUTES.adminDocuments}>
               <FileText size={16} aria-hidden="true" />
               Documents
+            </Link>
+            <Link className="admin-nav__link" to={ROUTES.adminHistory}>
+              <History size={16} aria-hidden="true" />
+              Historique
             </Link>
             <span className="admin-session__email">{admin?.email}</span>
             <button
