@@ -1,0 +1,53 @@
+# Blueprint Render de QuickPrint QR.
+# Aucune valeur secrète : les variables `sync: false` sont à saisir dans le
+# tableau de bord Render (ou dans un groupe d'environnement).
+services:
+  - type: web
+    name: quickprint-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: .
+    buildCommand: npm ci && npm run build --workspace @quickprint/backend
+    startCommand: node apps/backend/dist/main.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: MAX_PDF_SIZE_BYTES
+        value: "20971520"
+      - key: UPLOAD_INTENT_TTL_SECONDS
+        value: "900"
+
+  - type: web
+    name: quickprint-web
+    runtime: static
+    rootDir: .
+    buildCommand: npm ci && npm run build --workspace @quickprint/frontend
+    staticPublishPath: apps/frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*.html
+        name: Cache-Control
+        value: no-store
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
