@@ -792,6 +792,7 @@ a:hover {
 
 .documents-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
 }
 
@@ -862,6 +863,95 @@ a:hover {
 .status-badge--deleted {
   background: #fee2e2;
   color: #b91c1c;
+}
+
+.status-badge--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge--processing {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-badge--completed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge--failed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Historique                                                                  */
+/* -------------------------------------------------------------------------- */
+
+.history-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.history-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.history-tabs__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history-tabs__btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.history-tabs__btn.is-active {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+}
+
+.history-tabs__count {
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  font-size: 0.75rem;
+}
+
+.history-tabs__btn.is-active .history-tabs__count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.history-table td {
+  vertical-align: top;
+}
+
+.batch-documents {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.25rem;
+  min-width: 22ch;
+}
+
+.batch-documents li {
+  overflow-wrap: anywhere;
 }
 
 .empty-state {
@@ -952,6 +1042,7 @@ a:hover {
 
 .dashboard-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
 }
 
@@ -1350,8 +1441,156 @@ a:hover {
 }
 
 /* -------------------------------------------------------------------------- */
+/* Visionneuse PDF                                                             */
+/* -------------------------------------------------------------------------- */
+
+.viewer-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.viewer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.viewer-toolbar__title {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.viewer-toolbar__title strong {
+  overflow-wrap: anywhere;
+}
+
+.viewer-toolbar__title span {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.viewer-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.viewer-zoom {
+  min-width: 3.4rem;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.viewer-hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+}
+
+.viewer-stage {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  background: #eef2f7;
+  overflow: auto;
+}
+
+.viewer-canvas {
+  display: block;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.viewer-state {
+  display: grid;
+  gap: 0.8rem;
+  place-items: center;
+  padding: 3rem 1rem;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.viewer-state--error {
+  color: #b91c1c;
+}
+
+.print-confirm {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  background: var(--brand-soft);
+}
+
+.print-confirm p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.print-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.document-name__link {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.document-name__link:hover {
+  color: var(--brand-dark);
+  text-decoration: underline;
+}
+
+.selection-order {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  align-items: center;
+  justify-content: center;
+}
+
+/* -------------------------------------------------------------------------- */
 /* Responsive                                                                  */
 /* -------------------------------------------------------------------------- */
+
+@media (max-width: 720px) {
+  .site-header__inner {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .admin-session {
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    justify-content: flex-start;
+  }
+
+  .viewer-toolbar__title {
+    order: -1;
+    width: 100%;
+  }
+
+  .viewer-stage {
+    padding: 0.5rem;
+  }
+}
 
 @media (max-width: 860px) {
   .hero {
