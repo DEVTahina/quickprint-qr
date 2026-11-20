@@ -28,6 +28,8 @@ import type {
 
 const BUCKET = 'quickprint-documents';
 const PDF_SIGNATURE = Buffer.from('%PDF-');
+const PDF_EOF_MARKER = '%%EOF';
+const PDF_TAIL_BYTES = 1_024;
 const INTENT_COLUMNS =
   'id, session_id, original_name, storage_path, declared_size_bytes, expires_at, consumed_at';
 const DOCUMENT_COLUMNS = 'id, original_name, size_bytes, uploaded_at';
@@ -222,6 +224,20 @@ export class UploadsService {
       content.length < PDF_SIGNATURE.length ||
       !content.subarray(0, PDF_SIGNATURE.length).equals(PDF_SIGNATURE)
     ) {
+      await this.discardIntent(intent);
+      throw new UnsupportedMediaTypeException(
+        'Le fichier reçu ne correspond pas à un PDF valide.',
+      );
+    }
+
+    // Un vrai PDF se termine par %%EOF (éventuellement suivi d'octets de
+    // remplissage). Cette vérification légère rejette un fichier qui se
+    // contenterait de commencer par la signature.
+    const tail = content
+      .subarray(Math.max(0, content.length - PDF_TAIL_BYTES))
+      .toString('latin1');
+
+    if (!tail.includes(PDF_EOF_MARKER)) {
       await this.discardIntent(intent);
       throw new UnsupportedMediaTypeException(
         'Le fichier reçu ne correspond pas à un PDF valide.',
